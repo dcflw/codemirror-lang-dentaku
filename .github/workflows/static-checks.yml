@@ -1,0 +1,33 @@
+name: Static checks
+
+on:
+  push:
+    branches-ignore:
+      - main
+
+jobs:
+  static-checks:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use pnpm
+        uses: pnpm/action-setup@6e1964dde3397a825e79e4607ad57f3f7ca2c7cb
+        with:
+          version: ^8.10.2
+
+      - name: Set up Node and cache dependencies
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - run: pnpm lint
+      - run: pnpm check-formatting
+      - run: pnpm typecheck

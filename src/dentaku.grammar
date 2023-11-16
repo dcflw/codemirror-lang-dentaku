@@ -1,0 +1,83 @@
+@precedence {
+  call,
+  prefix,
+  postfix @left,
+  bitwise @left
+  power @left
+  times @left,
+  plus @left,
+  rel @left,
+
+  statement @cut
+}
+
+@top Program { expression? }
+
+commaSep<content> {
+  (content ("," content)*)?
+}
+
+expression[@isGroup=Expression] {
+  Number |
+  String |
+  VariableName |
+  @specialize[@name=BooleanLiteral]<identifier, "true" | "false"> |
+  ArrayExpression { "[" commaSep<expression> "]" } |
+  UnaryExpression |
+  ParenthesizedExpression |
+  BinaryExpression |
+
+  CallExpression {
+    FunctionName !call ArgList
+  }
+}
+
+VariableName { identifier }
+
+FunctionName { identifier }
+
+ParenthesizedExpression { "(" expression ")" }
+
+ArgList { "(" commaSep<expression> ")" }
+
+UnaryExpression {
+  !prefix ArithOp<"+" | "-"> expression |
+  expression !postfix PercentOp
+}
+
+BinaryExpression {
+  expression !bitwise BitwiseOp expression |
+  expression !power (ArithOp<"^">) expression |
+  expression !times (ArithOp<"/" | "*"> | PercentOp) expression |
+  expression !plus ArithOp<"+" | "-"> expression |
+  expression !rel CompareOp expression
+}
+
+@skip { space }
+
+@tokens {
+  identifierChar { @asciiLetter | $[_$\u{a1}-\u{10ffff}] }
+
+  identifier { identifierChar (identifierChar | @digit)* }
+
+  Number { @digit+ ("." @digit+)? }
+
+  String {
+    '"' (![\\\n"] | "\\" _)* '"'? |
+    "'" (![\\\n'] | "\\" _)* "'"?
+  }
+
+  ArithOp<expr> { expr }
+
+  BitwiseOp { "|" | "&" | "<<" | ">>" }
+
+  PercentOp { "%" }
+
+  CompareOp { (("<" | ">" | "=") "="? ) | "!=" | "<>"  }
+
+  space { $[ \t\n\r]+ }
+
+  "(" ")"
+}
+
+@detectDelim
