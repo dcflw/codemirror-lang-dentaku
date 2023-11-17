@@ -19,7 +19,10 @@ export interface ErrorMessages {
   /** Expected at least one parameter in a function call. */
   expectedAtLeastOneParameter: string;
   /** Expected that many parameters, found this many. */
-  parameterCountMismatch: (thatMany: number, thisMany: number) => string;
+  parameterCountMismatch: (
+    expectedAmount: number,
+    actualAmount: number
+  ) => string;
 }
 
 export interface DentakuLinterOptions {
@@ -128,7 +131,7 @@ export function dentakuLinter({
               from: nodeRef.from,
               to: nodeRef.to,
               severity: "error",
-              message: "Expected at least one parameter",
+              message: messages.expectedAtLeastOneParameter,
             });
           } else if (expectedArgumentCount !== undefined) {
             if (argumentCount !== expectedArgumentCount) {
@@ -136,9 +139,10 @@ export function dentakuLinter({
                 from: nodeRef.from,
                 to: nodeRef.to,
                 severity: "error",
-                message: `Expected ${expectedArgumentCount} parameter${
-                  expectedArgumentCount !== 1 ? "s" : ""
-                }, found ${argumentCount}.`,
+                message: messages.parameterCountMismatch(
+                  expectedArgumentCount,
+                  argumentCount
+                ),
               });
             }
           }
@@ -159,14 +163,14 @@ const defaultErrorMessages: ErrorMessages = {
   closingBracketMissing: "Closing bracket is missing",
   expectedCommaBefore: "Expected comma before this parameter",
   expectedOperatorBefore:
-    "Expected operator (e.g. +, -, *, /) before this name",
+    "Expected operator (e.g. +, -, *, /) before this expression",
   callParenthesesMissing: "Call this function with parentheses: ( )",
   undefinedVariable: "This variable is not defined",
   expectedAtLeastOneParameter: "Expected at least one parameter",
-  parameterCountMismatch: (thatMany, thisMany) =>
-    `Expected ${thatMany} parameter${
-      thatMany !== 1 ? "s" : ""
-    }, found ${thisMany}.`,
+  parameterCountMismatch: (expectedAmount, actualAmount) =>
+    `Expected ${expectedAmount} parameter${
+      expectedAmount !== 1 ? "s" : ""
+    }, found ${actualAmount}.`,
 };
 
 /** Argument counts for built-in functions (when they are of fixed arity). */
