@@ -1,0 +1,23 @@
+{
+  "name": "example",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "tsc",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "typescript": "^5.2.2",
+    "vite": "^5.0.0"
+  },
+  "dependencies": {
+    "@codemirror/autocomplete": "^6.11.0",
+    "@codemirror/language": "^6.9.2",
+    "@codemirror/lint": "^6.4.2",
+    "codemirror": "^6.0.1",
+    "codemirror-lang-dentaku": "workspace:*"
+  }
+}
