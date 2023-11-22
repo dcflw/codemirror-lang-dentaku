@@ -19,14 +19,14 @@ import { type DentakuLinterOptions, dentakuLinter } from "./linting";
  * ];
  */
 export function dentaku({
-  linterOptions: { codeMirrorConfig, ...linterOptions },
+  linterOptions: { codeMirrorConfig, ...linterOptions } = {},
   completionOptions,
 }: {
-  linterOptions: {
+  linterOptions?: {
     codeMirrorConfig?: Parameters<typeof linter>[1];
   } & DentakuLinterOptions;
-  completionOptions: DentakuLanguageCompletionOptions;
-}) {
+  completionOptions?: DentakuLanguageCompletionOptions;
+} = {}) {
   return new LanguageSupport(dentakuLanguage, [
     dentakuLanguage.data.of({
       autocomplete: dentakuCompletions(completionOptions),

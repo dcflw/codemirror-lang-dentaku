@@ -5,7 +5,7 @@ export default defineConfig({
   entry: {
     index: "./src/index.ts",
   },
-  dts: true,
+  experimentalDts: true,
   clean: true,
   format: ["esm", "cjs"],
   esbuildPlugins: [lezer()],

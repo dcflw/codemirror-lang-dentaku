@@ -1,3 +1,4 @@
+/** @type {import("eslint").Linter.Config} */
 module.exports = {
   env: {
     browser: true,
@@ -6,9 +7,6 @@ module.exports = {
   extends: [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
-    "plugin:react/recommended",
-    "plugin:react-hooks/recommended",
-    "plugin:storybook/recommended",
     "prettier",
   ],
   parser: "@typescript-eslint/parser",
@@ -16,7 +14,7 @@ module.exports = {
     project: "tsconfig.json",
     sourceType: "module",
   },
-  plugins: ["@typescript-eslint", "unused-imports", "react-refresh"],
+  plugins: ["@typescript-eslint", "unused-imports"],
   settings: {
     react: {
       version: "detect",
@@ -40,8 +38,5 @@ module.exports = {
       "error",
       { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
     ],
-    "react/prop-types": "off",
-    "react/react-in-jsx-scope": "off",
-    "react-refresh/only-export-components": "warn",
   },
 };

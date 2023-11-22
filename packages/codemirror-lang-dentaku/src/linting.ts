@@ -42,11 +42,6 @@ export function dentakuLinter({
     const cursor = syntaxTree(view.state).cursor();
 
     cursor.iterate((nodeRef) => {
-      console.debug(
-        nodeRef.name,
-        view.state.sliceDoc(nodeRef.from, nodeRef.to)
-      );
-
       switch (nodeRef.name) {
         case invalidSyntax: {
           const parent = nodeRef.node.parent;
