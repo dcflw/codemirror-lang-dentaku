@@ -1,9 +1,6 @@
 name: Static checks
 
-on:
-  push:
-    branches-ignore:
-      - main
+on: push
 
 jobs:
   static-checks:
