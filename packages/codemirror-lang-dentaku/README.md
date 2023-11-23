@@ -48,8 +48,15 @@ export interface DentakuLanguageCompletionOptions {
    * Converter of built-in Dentaku functions into `Completion` objects.
    * Allows you to add additional information to completions like descriptions.
    */
-  makeEntryForBuiltIns?: (
+  makeEntryForBuiltInFunctions?: (
     name: (typeof builtInFunctions)[number]
+  ) => Completion | null | false;
+  /**
+   * Converter of built-in Dentaku operators into `Completion` objects.
+   * Allows you to add additional information to completions like descriptions.
+   */
+  makeEntryForBuiltInOperators?: (
+    name: (typeof builtInOperators)[number]
   ) => Completion | null | false;
 }
 ```

@@ -59,7 +59,7 @@ export const dentakuLanguage = LRLanguage.define({
     ],
   }),
   languageData: {
-    closeBrackets: { brackets: ["(", "'", '"'] },
+    closeBrackets: { brackets: ["(", "[", "'", '"'] },
   },
 });
 

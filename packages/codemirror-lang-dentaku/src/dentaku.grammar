@@ -17,12 +17,16 @@ commaSep<content> {
   (content ("," content)*)?
 }
 
-expression[@isGroup=Expression] {
+literal[@isGroup=Literal] {
   Number |
   String |
-  VariableName |
   @specialize[@name=BooleanLiteral]<identifier, "true" | "false"> |
-  ArrayExpression { "[" commaSep<expression> "]" } |
+  ArrayExpression { "[" commaSep<expression> "]" }
+}
+
+expression[@isGroup=Expression] {
+  literal |
+  VariableName |
   UnaryExpression |
   ParenthesizedExpression |
   BinaryExpression |
@@ -77,7 +81,7 @@ BinaryExpression {
 
   space { $[ \t\n\r]+ }
 
-  "(" ")"
+  "(" ")" "[" "]"
 }
 
 @detectDelim
