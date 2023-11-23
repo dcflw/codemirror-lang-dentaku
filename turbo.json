@@ -8,7 +8,9 @@
     "lint": {
       "outputs": [".eslintcache"]
     },
-    "typecheck": {},
+    "typecheck": {
+      "dependsOn": ["^build"]
+    },
     "test": {},
     "dev": {
       "cache": false,
