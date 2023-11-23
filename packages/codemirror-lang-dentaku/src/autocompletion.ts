@@ -62,7 +62,9 @@ export function dentakuCompletions({
 
     if (isOperator) {
       return {
-        options: builtInOperators.map(makeEntryForBuiltInOperators),
+        options: builtInOperators
+          .map(makeEntryForBuiltInOperators)
+          .filter(Boolean),
         from: context.pos,
       };
     } else if (isWord || context.explicit) {
