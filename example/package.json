@@ -4,12 +4,17 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --open",
     "build": "vite build",
-    "lint": "tsc",
+    "typecheck": "tsc",
+    "lint": "eslint './src/**/*.{ts,tsx}' --cache",
+    "lint:fix": "eslint './src/**/*.{ts,tsx}' --fix --cache",
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.12.0",
+    "@typescript-eslint/parser": "^6.12.0",
+    "eslint": "^8.54.0",
     "typescript": "^5.2.2",
     "vite": "^5.0.0"
   },

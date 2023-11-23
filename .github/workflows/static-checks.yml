@@ -17,7 +17,7 @@ jobs:
       - name: Use pnpm
         uses: pnpm/action-setup@6e1964dde3397a825e79e4607ad57f3f7ca2c7cb
         with:
-          version: ^8.10.2
+          version: ^8.10.5
 
       - name: Set up Node and cache dependencies
         uses: actions/setup-node@v3
@@ -31,3 +31,4 @@ jobs:
       - run: pnpm lint
       - run: pnpm check-formatting
       - run: pnpm typecheck
+      - run: pnpm test

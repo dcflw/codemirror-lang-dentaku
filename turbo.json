@@ -5,8 +5,10 @@
       "outputs": ["dist/**"]
     },
     "lint": {
-      "dependsOn": ["^lint"]
+      "outputs": [".eslintcache"]
     },
+    "typecheck": {},
+    "test": {},
     "dev": {
       "cache": false,
       "persistent": true,

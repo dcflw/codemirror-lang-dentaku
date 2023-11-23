@@ -4,7 +4,11 @@
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
-    "lint": "turbo lint"
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
+    "check-formatting": "prettier --check --cache .",
+    "format": "prettier --write --cache ."
   },
   "devDependencies": {
     "prettier": "3.1.0",

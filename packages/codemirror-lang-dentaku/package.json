@@ -20,12 +20,10 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "check-formatting": "prettier --check --cache .",
-    "format": "prettier --write --cache .",
     "lint": "eslint './src/**/*.{ts,tsx}' --cache",
     "lint:fix": "eslint './src/**/*.{ts,tsx}' --fix --cache",
-    "typecheck": "tsc --project .github/tsconfig.ci.json",
-    "test": "vitest"
+    "typecheck": "tsc --project ./tsconfig.ci.json",
+    "test": "vitest run"
   },
   "devDependencies": {
     "@lezer/generator": "^1.5.1",
