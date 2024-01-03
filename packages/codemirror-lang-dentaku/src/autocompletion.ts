@@ -82,22 +82,19 @@ export function dentakuCompletions({
           .filter(Boolean),
         from: context.pos,
       };
+    } else if (isDurationArg) {
+      return {
+        options: durationArguments.filter(Boolean),
+        from: isWord ? inner.from : context.pos,
+        validFor: Identifier,
+      };
     } else if (isWord || context.explicit) {
       const functionEntries = builtInFunctions
         .map(makeEntryForBuiltInFunctions)
         .filter(Boolean);
-      const durationEntries = isDurationArg
-        ? durationArguments
-        : [{ label: "duration", type: "function" }];
 
       return {
-        options: [...functionEntries, ...variableEntries, ...durationEntries],
-        from: isWord ? inner.from : context.pos,
-        validFor: Identifier,
-      };
-    } else if (isDurationArg) {
-      return {
-        options: durationArguments.filter(Boolean),
+        options: [...functionEntries, ...variableEntries],
         from: isWord ? inner.from : context.pos,
         validFor: Identifier,
       };
