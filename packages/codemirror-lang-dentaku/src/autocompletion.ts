@@ -30,6 +30,15 @@ export interface DentakuLanguageCompletionOptions {
 
 const Identifier = /^[\w$\xa1-\uffff][\w$\d\xa1-\uffff]*$/;
 
+const durationArguments = [
+  { label: "day", type: "variable" },
+  { label: "days", type: "variable" },
+  { label: "month", type: "variable" },
+  { label: "months", type: "variable" },
+  { label: "year", type: "variable" },
+  { label: "years", type: "variable" },
+];
+
 type NodeApproximation = { lastChild: NodeApproximation | null };
 function rightmostLeaf<NodeType extends NodeApproximation>(node: NodeType) {
   if (node.lastChild !== null) {
@@ -54,9 +63,15 @@ export function dentakuCompletions({
         Identifier.test(context.state.sliceDoc(inner.from, inner.to)));
 
     const treeCursor = tree.cursorAt(context.pos, -1);
+    const nodeName = treeCursor.node.type.name;
+    const nodeParentName = treeCursor.node.parent?.type.name;
+    const isDurationArg =
+      nodeName === "Duration" ||
+      (nodeParentName === "Duration" && !["(", ")"].includes(nodeName));
     const isOperator =
       context.state.sliceDoc(context.pos - 1, context.pos) === " " &&
       treeCursor.prev() &&
+      !isDurationArg &&
       (rightmostLeaf(treeCursor.node).type.is("Literal") ||
         rightmostLeaf(treeCursor.node).name === "VariableName");
 
@@ -66,6 +81,12 @@ export function dentakuCompletions({
           .map(makeEntryForBuiltInOperators)
           .filter(Boolean),
         from: context.pos,
+      };
+    } else if (isDurationArg) {
+      return {
+        options: durationArguments.filter(Boolean),
+        from: isWord ? inner.from : context.pos,
+        validFor: Identifier,
       };
     } else if (isWord || context.explicit) {
       const functionEntries = builtInFunctions

@@ -21,7 +21,9 @@ literal[@isGroup=Literal] {
   Number |
   String |
   @specialize[@name=BooleanLiteral]<identifier, "true" | "false"> |
-  ArrayExpression { "[" commaSep<expression> "]" }
+  ArrayExpression { "[" commaSep<expression> "]" } | 
+  Duration {"duration" "(" Number "," Duration ")"} |
+  Date
 }
 
 expression[@isGroup=Expression] {
@@ -71,6 +73,14 @@ BinaryExpression {
     "'" (![\\\n'] | "\\" _)* "'"?
   }
 
+  Duration { "day" | "days" | "week" | "weeks" | "month" | "months" | "year" | "years" }
+
+  Day { @digit | "0" @digit | "1" @digit | "2" @digit | "30" | "31" }
+
+  Month { @digit | "0" @digit | "10" | "11" | "12" }
+
+  Date { Day "-" Month "-" @digit @digit @digit @digit }
+
   ArithOp<expr> { expr }
 
   BitwiseOp { "|" | "&" | "<<" | ">>" }
@@ -80,6 +90,13 @@ BinaryExpression {
   CompareOp { (("<" | ">" | "=") "="? ) | "!=" | "<>"  }
 
   space { $[ \t\n\r]+ }
+
+  @precedence {
+    "duration",
+    identifier,
+    Date,
+    Number
+  }
 
   "(" ")" "[" "]"
 }

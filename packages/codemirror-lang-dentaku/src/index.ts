@@ -49,6 +49,7 @@ export const dentakuLanguage = LRLanguage.define({
         Number: t.number,
         Boolean: t.bool,
         String: t.string,
+        Duration: t.unit,
         "( )": t.paren,
         ArithOp: t.arithmeticOperator,
         PercentOp: t.arithmeticOperator,

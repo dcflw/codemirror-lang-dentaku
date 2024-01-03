@@ -64,4 +64,6 @@ export const builtInFunctions = [
   "all",
   "any",
   "pluck",
+
+  "duration",
 ] as const;
