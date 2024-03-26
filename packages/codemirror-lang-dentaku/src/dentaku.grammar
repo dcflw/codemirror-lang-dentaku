@@ -38,7 +38,7 @@ expression[@isGroup=Expression] {
   }
 }
 
-VariableName { identifier }
+VariableName { identifier ("." identifier)* }
 
 FunctionName { identifier }
 

@@ -1,20 +1,25 @@
 import { EditorView, basicSetup } from "codemirror";
 import { dentaku } from "codemirror-lang-dentaku";
 
+const knownVariables = [
+  "pages",
+  "frequency",
+  "user.firstName",
+  "user.address.street",
+  "user.address.number",
+];
+
 new EditorView({
   extensions: [
     basicSetup,
     dentaku({
       completionOptions: {
-        variableEntries: [
-          { label: "pages", type: "variable" },
-          { label: "frequency", type: "variable" },
-          { label: "firstName", type: "variable" },
-        ],
+        variableEntries: knownVariables.map((label) => ({
+          label,
+          type: "variable",
+        })),
       },
-      linterOptions: {
-        knownVariables: ["pages", "frequency", "firstName"],
-      },
+      linterOptions: { knownVariables },
     }),
   ],
   parent: document.querySelector<HTMLDivElement>("#app")!,
