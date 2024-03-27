@@ -503,6 +503,20 @@ describe("Ruby specs: functions with negative numbers", () => {
   });
 });
 
+describe("variables", () => {
+  it("parses nested hashes as variables", () => {
+    const tree = parser.parse("a.basket.of");
+    const spec = `Program(VariableName)`;
+    expect(() => testTree(tree, spec)).not.toThrow();
+  });
+
+  it("parses nested hashes within expressions", () => {
+    const tree = parser.parse("a.basket.of * 4");
+    const spec = `Program(BinaryExpression(VariableName,ArithOp,Number))`;
+    expect(() => testTree(tree, spec)).not.toThrow();
+  });
+});
+
 describe("functions", () => {
   it("parses left('ABCD', 2)", () => {
     const tree = parser.parse("left('ABCD', 2)");
