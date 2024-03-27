@@ -43,8 +43,19 @@
     "vitest": "^0.34.6"
   },
   "author": "Docfield Team",
-  "tags": ["codemirror", "language", "dentaku", "formula"],
-  "files": ["dist", "src", "README.md", "LICENSE", "package.json"],
+  "tags": [
+    "codemirror",
+    "language",
+    "dentaku",
+    "formula"
+  ],
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE",
+    "package.json"
+  ],
   "dependencies": {
     "@lezer/highlight": "^1.2.0",
     "unplugin-lezer": "^1.0.0"
