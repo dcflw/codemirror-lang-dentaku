@@ -38,7 +38,7 @@ jobs:
           script: |
             process.chdir("./packages/codemirror-lang-dentaku");
             const packageJson = require("./package.json");
-            const script = require('.github/scripts/bump-version');
+            const script = require('../../.github/scripts/bump-version');
             await script.bumpPackageVersion(packageJson, { context, exec, fetch });
 
       - name: Build
