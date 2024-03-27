@@ -16,6 +16,8 @@ export interface ErrorMessages {
   callParenthesesMissing: string;
   /** This variable is not defined. */
   undefinedVariable: string;
+  /** Missing child property. */
+  missingChildProperty: string;
   /** Expected at least one parameter in a function call. */
   expectedAtLeastOneParameter: string;
   /** Expected that many parameters, found this many. */
@@ -94,6 +96,15 @@ export function dentakuLinter({
                 severity: "error",
                 message: messages.callParenthesesMissing,
               });
+            } else if (
+              knownVariables.some((value) => value.includes(`${variableName}.`))
+            ) {
+              diagnostics.push({
+                from: nodeRef.from,
+                to: nodeRef.to,
+                severity: "error",
+                message: messages.missingChildProperty,
+              });
             } else {
               diagnostics.push({
                 from: nodeRef.from,
@@ -161,6 +172,7 @@ const defaultErrorMessages: ErrorMessages = {
     "Expected operator (e.g. +, -, *, /) before this expression",
   callParenthesesMissing: "Call this function with parentheses: ( )",
   undefinedVariable: "This variable is not defined",
+  missingChildProperty: "Missing child property",
   expectedAtLeastOneParameter: "Expected at least one parameter",
   parameterCountMismatch: (expectedAmount, actualAmount) =>
     `Expected ${expectedAmount} parameter${
