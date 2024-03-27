@@ -100,8 +100,6 @@ export interface ErrorMessages {
 These features aren't on our roadmap because we don't use them currently, but contributions are highly welcome!
 
 - [ ] Hexadecimal number literals (e.g., `0xFF`)
-- [ ] Date literals (e.g. `2022-02-02`)
-- [ ] Duration literals (e.g. `duration(1, day)`)
 - [ ] Logic operators as operators (e.g., `a AND b`), functions are supported though (e.g, `and(a, b)`)
 - [ ] Syntax highlighting of `case` statements
 - [ ] Autocompletion for custom functions
