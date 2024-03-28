@@ -1,6 +1,6 @@
 import { syntaxTree } from "@codemirror/language";
 import type { Diagnostic, LintSource } from "@codemirror/lint";
-import { builtInFunctions } from "./builtInFunctions";
+import { BuiltInFunctionsType, builtInFunctions } from "./builtInFunctions";
 
 /** Message codes that can be overridden with custom messages. */
 export interface ErrorMessages {
@@ -18,12 +18,15 @@ export interface ErrorMessages {
   undefinedVariable: string;
   /** Missing child property. */
   missingChildProperty: string;
-  /** Expected at least one parameter in a function call. */
-  expectedAtLeastOneParameter: string;
-  /** Expected that many parameters, found this many. */
-  parameterCountMismatch: (
-    expectedAmount: number,
-    actualAmount: number
+  /** Expected exactly that many parameters, found this many. */
+  expectedExactArgumentCount: (count: number) => string;
+  /** Expected at least that many parameters, found this many. */
+  expectedMinimumArgumentCount: (count: number) => string;
+  /** Expected between that and that many parameters, found this many. */
+  expectedArgumentCountRange: (
+    actualCount: number,
+    minCount: number,
+    maxCount: number
   ) => string;
 }
 
@@ -40,6 +43,10 @@ export function dentakuLinter({
 }: DentakuLinterOptions = {}): LintSource {
   return (view) => {
     const diagnostics: Diagnostic[] = [];
+
+    const knownFunctions = Object.keys(
+      builtInFunctions
+    ) as BuiltInFunctionsType[];
 
     const cursor = syntaxTree(view.state).cursor();
 
@@ -89,7 +96,7 @@ export function dentakuLinter({
           }
 
           if (!knownVariables.includes(variableName)) {
-            if (builtInFunctions.includes(variableName)) {
+            if (knownFunctions.includes(variableName)) {
               diagnostics.push({
                 from: nodeRef.from,
                 to: nodeRef.to,
@@ -126,32 +133,43 @@ export function dentakuLinter({
           const functionName = view.state.sliceDoc(
             functionNameNode.from,
             functionNameNode.to
-          );
-          const expectedArgumentCount: number | undefined =
-            knownArgumentCounts[
-              functionName as keyof typeof knownArgumentCounts
-            ];
+          ) as BuiltInFunctionsType;
 
-          if (expectedArgumentCount === undefined && argumentCount === 0) {
-            diagnostics.push({
-              from: nodeRef.from,
-              to: nodeRef.to,
-              severity: "error",
-              message: messages.expectedAtLeastOneParameter,
-            });
-          } else if (expectedArgumentCount !== undefined) {
-            if (argumentCount !== expectedArgumentCount) {
+          const { minArgs = 0, maxArgs = Infinity } =
+            builtInFunctions[functionName] ?? {};
+
+          if (maxArgs < Infinity) {
+            if (minArgs === maxArgs && minArgs !== argumentCount) {
               diagnostics.push({
                 from: nodeRef.from,
                 to: nodeRef.to,
                 severity: "error",
-                message: messages.parameterCountMismatch(
-                  expectedArgumentCount,
-                  argumentCount
+                message: messages.expectedExactArgumentCount(minArgs),
+              });
+            } else if (
+              minArgs < maxArgs &&
+              (minArgs > argumentCount || maxArgs < argumentCount)
+            ) {
+              diagnostics.push({
+                from: nodeRef.from,
+                to: nodeRef.to,
+                severity: "error",
+                message: messages.expectedArgumentCountRange(
+                  argumentCount,
+                  minArgs,
+                  maxArgs
                 ),
               });
             }
+          } else if (minArgs > argumentCount) {
+            diagnostics.push({
+              from: nodeRef.from,
+              to: nodeRef.to,
+              severity: "error",
+              message: messages.expectedMinimumArgumentCount(minArgs),
+            });
           }
+
           break;
         }
       }
@@ -173,52 +191,16 @@ const defaultErrorMessages: ErrorMessages = {
   callParenthesesMissing: "Call this function with parentheses: ( )",
   undefinedVariable: "This variable is not defined",
   missingChildProperty: "Missing child property",
-  expectedAtLeastOneParameter: "Expected at least one parameter",
-  parameterCountMismatch: (expectedAmount, actualAmount) =>
-    `Expected ${expectedAmount} parameter${
-      expectedAmount !== 1 ? "s" : ""
+  expectedExactArgumentCount: (expectedAmount) =>
+    `Expected exactly ${expectedAmount} parameter${
+      expectedAmount > 1 ? "s" : ""
+    }.`,
+  expectedMinimumArgumentCount: (expectedAmount) =>
+    `Expected at least ${expectedAmount} parameter${
+      expectedAmount > 1 ? "s" : ""
+    }.`,
+  expectedArgumentCountRange: (actualAmount, expectedMin, expectedMax) =>
+    `Expected between ${expectedMin} and ${expectedMax} argument${
+      expectedMax > 1 ? "s" : ""
     }, found ${actualAmount}.`,
-};
-
-/** Argument counts for built-in functions (when they are of fixed arity). */
-const knownArgumentCounts: Partial<
-  Record<(typeof builtInFunctions)[number], number>
-> = {
-  acos: 1,
-  acosh: 1,
-  asin: 1,
-  asinh: 1,
-  atan: 1,
-  atan2: 2,
-  atanh: 1,
-  cbrt: 1,
-  cos: 1,
-  cosh: 1,
-  erf: 1,
-  erfc: 1,
-  exp: 1,
-  frexp: 1,
-  gamma: 1,
-  hypot: 2,
-  ldexp: 2,
-  lgamma: 1,
-  log10: 1,
-  log2: 1,
-  sin: 1,
-  sinh: 1,
-  sqrt: 1,
-  tan: 1,
-  tanh: 1,
-  if: 3,
-  not: 1,
-  abs: 1,
-  left: 2,
-  right: 2,
-  mid: 3,
-  substitute: 3,
-  contains: 2,
-  any: 3,
-  all: 3,
-  map: 3,
-  pluck: 2,
 };

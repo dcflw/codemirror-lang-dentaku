@@ -88,10 +88,16 @@ export interface ErrorMessages {
   callParenthesesMissing: string;
   /** This variable is not defined. */
   undefinedVariable: string;
-  /** Expected at least one parameter in a function call. */
-  expectedAtLeastOneParameter: string;
-  /** Expected that many parameters, found this many. */
-  parameterCountMismatch: (thatMany: number, thisMany: number) => string;
+  /** Expected exactly that many parameters, found this many. */
+  expectedExactArgumentCount: (count: number) => string;
+  /** Expected at least that many parameters, found this many. */
+  expectedMinimumArgumentCount: (count: number) => string;
+  /** Expected between that and that many parameters, found this many. */
+  expectedArgumentCountRange: (
+    actualCount: number,
+    minCount: number,
+    maxCount: number
+  ) => string;
 }
 ```
 
@@ -104,6 +110,5 @@ These features aren't on our roadmap because we don't use them currently, but co
 - [ ] Syntax highlighting of `case` statements
 - [ ] Autocompletion for custom functions
 - [ ] Linting argument counts of custom functions (including functions that take no arguments)
-- [ ] Linting argument counts of functions with optional arguments
 - [ ] Customizing the severity of lint errors
 - [ ] Auto-fixing for fixable lint errors

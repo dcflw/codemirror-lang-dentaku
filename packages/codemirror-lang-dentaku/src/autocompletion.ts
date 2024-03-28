@@ -1,7 +1,7 @@
 import type { CompletionContext, Completion } from "@codemirror/autocomplete";
 import { syntaxTree } from "@codemirror/language";
 
-import { builtInFunctions } from "./builtInFunctions";
+import { BuiltInFunctionsType, builtInFunctions } from "./builtInFunctions";
 import { builtInOperators } from "./builtInOperators";
 
 export interface DentakuLanguageCompletionOptions {
@@ -17,7 +17,7 @@ export interface DentakuLanguageCompletionOptions {
    * Allows you to add additional information to completions like descriptions.
    */
   makeEntryForBuiltInFunctions?: (
-    name: (typeof builtInFunctions)[number]
+    name: BuiltInFunctionsType
   ) => Completion | null | false;
   /**
    * Converter of built-in Dentaku operators into `Completion` objects.
@@ -89,7 +89,9 @@ export function dentakuCompletions({
         validFor: Identifier,
       };
     } else if (isWord || context.explicit) {
-      const functionEntries = builtInFunctions
+      const functionEntries = (
+        Object.keys(builtInFunctions) as Array<BuiltInFunctionsType>
+      )
         .map(makeEntryForBuiltInFunctions)
         .filter(Boolean);
 
