@@ -13,6 +13,13 @@ export interface DentakuLanguageCompletionOptions {
    */
   variableEntries?: Array<Completion>;
   /**
+   * CodeMirror `Completion` objects for custom functions.
+   *
+   * @example
+   * ["fnA", "fnB"].map(name => ({ label: name, type: "function" }))
+   */
+  customFunctionEntries?: Array<Completion>;
+  /**
    * Converter of built-in Dentaku functions into `Completion` objects.
    * Allows you to add additional information to completions like descriptions.
    */
@@ -50,6 +57,7 @@ function rightmostLeaf<NodeType extends NodeApproximation>(node: NodeType) {
 
 export function dentakuCompletions({
   variableEntries = [],
+  customFunctionEntries = [],
   makeEntryForBuiltInFunctions = (name) => ({ label: name, type: "function" }),
   makeEntryForBuiltInOperators = (name) => ({ label: name, type: "operator" }),
 }: DentakuLanguageCompletionOptions = {}) {
@@ -89,14 +97,18 @@ export function dentakuCompletions({
         validFor: Identifier,
       };
     } else if (isWord || context.explicit) {
-      const functionEntries = (
+      const builtInFunctionEntries = (
         Object.keys(builtInFunctions) as Array<BuiltInFunctionsType>
       )
         .map(makeEntryForBuiltInFunctions)
         .filter(Boolean);
 
       return {
-        options: [...functionEntries, ...variableEntries],
+        options: [
+          ...builtInFunctionEntries,
+          ...customFunctionEntries,
+          ...variableEntries,
+        ],
         from: isWord ? inner.from : context.pos,
         validFor: Identifier,
       };

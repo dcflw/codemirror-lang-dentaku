@@ -1,6 +1,7 @@
 import { syntaxTree } from "@codemirror/language";
 import type { Diagnostic, LintSource } from "@codemirror/lint";
 import { BuiltInFunctionsType, builtInFunctions } from "./builtInFunctions";
+import { DentakuFunctionConfig } from "./function-config";
 
 /** Message codes that can be overridden with custom messages. */
 export interface ErrorMessages {
@@ -33,20 +34,29 @@ export interface ErrorMessages {
 export interface DentakuLinterOptions {
   /** List of variable names to not treat as undefined. */
   knownVariables?: Array<string>;
+  /** Custom functions. */
+  customFunctions?: Record<string, DentakuFunctionConfig>;
   /** Custom error messages. */
   messages?: ErrorMessages;
 }
 
 export function dentakuLinter({
   knownVariables = [],
+  customFunctions = {},
   messages = defaultErrorMessages,
 }: DentakuLinterOptions = {}): LintSource {
   return (view) => {
     const diagnostics: Diagnostic[] = [];
 
-    const knownFunctions = Object.keys(
-      builtInFunctions
-    ) as BuiltInFunctionsType[];
+    const knownFunctions: Record<string, DentakuFunctionConfig> = {
+      ...(builtInFunctions as unknown as Record<
+        BuiltInFunctionsType,
+        DentakuFunctionConfig
+      >),
+      // Custom functions should override built-in functions, as this is the
+      // way Dentaku works.
+      ...customFunctions,
+    };
 
     const cursor = syntaxTree(view.state).cursor();
 
@@ -96,7 +106,7 @@ export function dentakuLinter({
           }
 
           if (!knownVariables.includes(variableName)) {
-            if (knownFunctions.includes(variableName)) {
+            if (Object.keys(knownFunctions).includes(variableName)) {
               diagnostics.push({
                 from: nodeRef.from,
                 to: nodeRef.to,
@@ -136,7 +146,7 @@ export function dentakuLinter({
           ) as BuiltInFunctionsType;
 
           const { minArgs = 0, maxArgs = Infinity } =
-            builtInFunctions[functionName] ?? {};
+            knownFunctions[functionName] ?? {};
 
           if (maxArgs < Infinity) {
             if (minArgs === maxArgs && minArgs !== argumentCount) {

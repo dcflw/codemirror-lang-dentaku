@@ -7,6 +7,7 @@ import {
   type DentakuLanguageCompletionOptions,
   dentakuCompletions,
 } from "./autocompletion";
+import { type DentakuFunctionConfig } from "./function-config";
 import { type DentakuLinterOptions, dentakuLinter } from "./linting";
 
 /**
@@ -66,4 +67,5 @@ export const dentakuLanguage = LRLanguage.define({
 
 export { dentakuCompletions, dentakuLinter, dentakuParser };
 export type { DentakuLanguageCompletionOptions, DentakuLinterOptions };
+export type { DentakuFunctionConfig };
 export { type ErrorMessages, invalidSyntax } from "./linting";
