@@ -46,7 +46,7 @@ export const builtInFunctions = {
   max: { minArgs: 1, maxArgs: Infinity },
   sum: { minArgs: 1, maxArgs: Infinity },
   avg: { minArgs: 1, maxArgs: Infinity },
-  count: null,
+  count: {},
   round: { minArgs: 1, maxArgs: 2 },
   roundup: { minArgs: 1, maxArgs: 2 },
   rounddown: { minArgs: 1, maxArgs: 2 },
