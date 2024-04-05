@@ -1,7 +1,7 @@
 import { syntaxTree } from "@codemirror/language";
 import type { Diagnostic, LintSource } from "@codemirror/lint";
-import { BuiltInFunctionsType, builtInFunctions } from "./builtInFunctions";
-import { DentakuFunctionConfig } from "./function-config";
+import { builtInFunctions } from "./builtInFunctions";
+import { Arity } from "./arity";
 
 /** Message codes that can be overridden with custom messages. */
 export interface ErrorMessages {
@@ -20,9 +20,20 @@ export interface ErrorMessages {
   /** Missing child property. */
   missingChildProperty: string;
   /** Expected exactly that many parameters, found this many. */
-  expectedExactArgumentCount: (count: number) => string;
+  expectedExactArgumentCount: (
+    actualCount: number,
+    expectedCount: number
+  ) => string;
+  /** Expected at most that many parameters, found this many. */
+  expectedMaximumArgumentCount: (
+    actualCount: number,
+    maxCount: number
+  ) => string;
   /** Expected at least that many parameters, found this many. */
-  expectedMinimumArgumentCount: (count: number) => string;
+  expectedMinimumArgumentCount: (
+    actualCount: number,
+    minCount: number
+  ) => string;
   /** Expected between that and that many parameters, found this many. */
   expectedArgumentCountRange: (
     actualCount: number,
@@ -35,7 +46,7 @@ export interface DentakuLinterOptions {
   /** List of variable names to not treat as undefined. */
   knownVariables?: Array<string>;
   /** Custom functions. */
-  customFunctions?: Record<string, DentakuFunctionConfig>;
+  customFunctions?: Record<string, Arity>;
   /** Custom error messages. */
   messages?: ErrorMessages;
 }
@@ -45,14 +56,19 @@ export function dentakuLinter({
   customFunctions = {},
   messages = defaultErrorMessages,
 }: DentakuLinterOptions = {}): LintSource {
+  if (
+    Object.values(customFunctions).some(
+      ({ minArgs = 0, maxArgs = Infinity }) => minArgs > maxArgs
+    )
+  ) {
+    throw new Error("minArgs greater than maxArgs found in customFunctions.");
+  }
+
   return (view) => {
     const diagnostics: Diagnostic[] = [];
 
-    const knownFunctions: Record<string, DentakuFunctionConfig> = {
-      ...(builtInFunctions as unknown as Record<
-        BuiltInFunctionsType,
-        DentakuFunctionConfig
-      >),
+    const knownFunctions: Record<string, Arity> = {
+      ...builtInFunctions,
       // Custom functions should override built-in functions, as this is the
       // way Dentaku works.
       ...customFunctions,
@@ -106,7 +122,7 @@ export function dentakuLinter({
           }
 
           if (!knownVariables.includes(variableName)) {
-            if (Object.keys(knownFunctions).includes(variableName)) {
+            if (variableName in knownFunctions) {
               diagnostics.push({
                 from: nodeRef.from,
                 to: nodeRef.to,
@@ -143,40 +159,48 @@ export function dentakuLinter({
           const functionName = view.state.sliceDoc(
             functionNameNode.from,
             functionNameNode.to
-          ) as BuiltInFunctionsType;
+          );
 
           const { minArgs = 0, maxArgs = Infinity } =
-            knownFunctions[functionName] ?? {};
+            functionName in knownFunctions
+              ? knownFunctions[functionName as keyof typeof knownFunctions]
+              : {};
 
-          if (maxArgs < Infinity) {
-            if (minArgs === maxArgs && minArgs !== argumentCount) {
-              diagnostics.push({
-                from: nodeRef.from,
-                to: nodeRef.to,
-                severity: "error",
-                message: messages.expectedExactArgumentCount(minArgs),
-              });
-            } else if (
-              minArgs < maxArgs &&
-              (minArgs > argumentCount || maxArgs < argumentCount)
-            ) {
-              diagnostics.push({
-                from: nodeRef.from,
-                to: nodeRef.to,
-                severity: "error",
-                message: messages.expectedArgumentCountRange(
-                  argumentCount,
-                  minArgs,
-                  maxArgs
-                ),
-              });
-            }
-          } else if (minArgs > argumentCount) {
+          let message = "";
+
+          if (
+            minArgs > 0 &&
+            maxArgs < Infinity &&
+            (argumentCount < minArgs || argumentCount > maxArgs)
+          ) {
+            message = messages.expectedArgumentCountRange(
+              argumentCount,
+              minArgs,
+              maxArgs
+            );
+          } else if (minArgs === maxArgs && minArgs !== argumentCount) {
+            message = messages.expectedExactArgumentCount(
+              argumentCount,
+              minArgs
+            );
+          } else if (maxArgs === Infinity && argumentCount < minArgs) {
+            message = messages.expectedMinimumArgumentCount(
+              argumentCount,
+              minArgs
+            );
+          } else if (minArgs === 0 && argumentCount > maxArgs) {
+            message = messages.expectedMaximumArgumentCount(
+              argumentCount,
+              maxArgs
+            );
+          }
+
+          if (message.length) {
             diagnostics.push({
               from: nodeRef.from,
               to: nodeRef.to,
               severity: "error",
-              message: messages.expectedMinimumArgumentCount(minArgs),
+              message,
             });
           }
 
@@ -201,14 +225,18 @@ const defaultErrorMessages: ErrorMessages = {
   callParenthesesMissing: "Call this function with parentheses: ( )",
   undefinedVariable: "This variable is not defined",
   missingChildProperty: "Missing child property",
-  expectedExactArgumentCount: (expectedAmount) =>
-    `Expected exactly ${expectedAmount} parameter${
+  expectedExactArgumentCount: (actualAmount, expectedAmount) =>
+    `Expected exactly ${expectedAmount} argument${
       expectedAmount > 1 ? "s" : ""
-    }.`,
-  expectedMinimumArgumentCount: (expectedAmount) =>
-    `Expected at least ${expectedAmount} parameter${
+    }, found ${actualAmount}.`,
+  expectedMinimumArgumentCount: (actualAmount, expectedAmount) =>
+    `Expected at least ${expectedAmount} argument${
       expectedAmount > 1 ? "s" : ""
-    }.`,
+    }, found ${actualAmount}.`,
+  expectedMaximumArgumentCount: (actualAmount, expectedAmount) =>
+    `Expected no more than ${expectedAmount} argument${
+      expectedAmount > 1 ? "s" : ""
+    }, found ${actualAmount}.`,
   expectedArgumentCountRange: (actualAmount, expectedMin, expectedMax) =>
     `Expected between ${expectedMin} and ${expectedMax} argument${
       expectedMax > 1 ? "s" : ""

@@ -1,5 +1,5 @@
 import { EditorView, basicSetup } from "codemirror";
-import { DentakuFunctionConfig, dentaku } from "codemirror-lang-dentaku";
+import { Arity, dentaku } from "codemirror-lang-dentaku";
 
 const knownVariables = [
   "pages",
@@ -9,10 +9,12 @@ const knownVariables = [
   "user.address.number",
 ];
 
-const customFunctions: Record<string, DentakuFunctionConfig> = {
+const customFunctions: Record<string, Arity> = {
   fnWithOneArg: { minArgs: 1, maxArgs: 1 },
+  fnWithOneOrTwoArgs: { minArgs: 1, maxArgs: 2 },
+  fnWithMaxTwoArgs: { minArgs: 0, maxArgs: 2 },
   fnWithTwoOrMoreArgs: { minArgs: 2, maxArgs: Infinity },
-  fnWithDefaultConfig: null,
+  fnWithDefaultArityConfig: {},
 };
 
 new EditorView({

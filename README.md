@@ -72,14 +72,14 @@ export interface DentakuLanguageCompletionOptions {
 
 The `linterOptions` object is of type `DentakuLinterOptions & { codeMirrorConfig?: Parameters<typeof linter>[1] }` (see [`linter`](https://codemirror.net/docs/ref/#lint.linter)).  
 This means that, apart from allowing fields from `DentakuLinterOptions` described below, the `linterOptions` also allows an optional `codeMirrorConfig` field that lets you specify options for the CodeMirror [linter](https://codemirror.net/docs/ref/#lint.linter) function (`linter(lintSource, options)`).
-The `customFunctions` property is an object with the custom functions names as keys and `DentakuFunctionConfig` object as values (see [Custom Functions](#custom-functions") below).
+The `customFunctions` property is an object with the custom functions names as keys and `Arity` object as values (see [Custom Functions](#custom-functions") below).
 
 ```ts
 export interface DentakuLinterOptions {
   /** List of variable names to not treat as undefined. */
   knownVariables?: Array<string>;
   /** Custom functions. */
-  customFunctions?: Record<string, DentakuFunctionConfig>;
+  customFunctions?: Record<string, Arity>;
   /** Custom error messages. */
   messages?: ErrorMessages;
 }
@@ -99,9 +99,20 @@ export interface ErrorMessages {
   /** This variable is not defined. */
   undefinedVariable: string;
   /** Expected exactly that many parameters, found this many. */
-  expectedExactArgumentCount: (count: number) => string;
+  expectedExactArgumentCount: (
+    actualCount: number,
+    expectedCount: number
+  ) => string;
+  /** Expected at most that many parameters, found this many. */
+  expectedMaximumArgumentCount: (
+    actualCount: number,
+    maxCount: number
+  ) => string;
   /** Expected at least that many parameters, found this many. */
-  expectedMinimumArgumentCount: (count: number) => string;
+  expectedMinimumArgumentCount: (
+    actualCount: number,
+    minCount: number
+  ) => string;
   /** Expected between that and that many parameters, found this many. */
   expectedArgumentCountRange: (
     actualCount: number,
@@ -113,17 +124,19 @@ export interface ErrorMessages {
 
 ### Custom Functions
 
-The configurations of custom functions allows defining the minimum and maximum number of arguments that can be passed to each function. When a function supports an unknown number of maximum arguments, `Infinity` should be provided. If `null` is provided as value, by default, the minimum will be `0` and the maximum `Infinity`. When a is provided, both `minArgs` and `maxArgs` are required.
+The configuration of custom functions allows defining the minimum and maximum number of arguments that can be passed to each function. When a function supports an unknown number of maximum arguments, `Infinity` should be provided. If an empty object (`{}`) is provided as value, by default, the minimum will be `0` and the maximum `Infinity`. When a is provided, both `minArgs` and `maxArgs` are required.
 
 ```ts
-/** Configurations functions  */
-export type DentakuFunctionConfig = {
-  minArgs: number;
-  maxArgs: number;
+/** Arity config for built-in and custom functions  */
+export type Arity = {
+  /** @default 0 */
+  minArgs?: number;
+  /** @default Infinity */
+  maxArgs?: number;
 };
 
 // Example of custom functions configuration
-const customFunctions: Record<string, DentakuFunctionConfig> = {
+const customFunctions: Record<string, Arity> = {
   fnWithOneArg: {
     minArgs: 1,
     maxArgs: 1,
@@ -132,7 +145,7 @@ const customFunctions: Record<string, DentakuFunctionConfig> = {
     minArgs: 2,
     maxArgs: Infinity,
   },
-  fnWithDefaultConfig: null,
+  fnWithDefaultConfig: {},
 };
 ```
 
