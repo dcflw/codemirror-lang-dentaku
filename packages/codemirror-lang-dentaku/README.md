@@ -20,7 +20,7 @@ new EditorView({
 ## Features
 
 - Syntax highlighting (except `case` statements)
-- Autocompletion for known variables and built-in functions
+- Autocompletion for built-in and custom functions and known variables
 - Linting for syntax errors and undefined variables
 
 This package doesn't offer support for everything that Dentaku offers, see the list of [missing features](#missing-features) below.
@@ -45,6 +45,13 @@ export interface DentakuLanguageCompletionOptions {
    */
   variableEntries?: Array<Completion>;
   /**
+   * CodeMirror `Completion` objects for custom functions.
+   *
+   * @example
+   * ["fnA", "fnB"].map(name => ({ label: name, type: "function" }))
+   */
+  customFunctionEntries?: Array<Completion>;
+  /**
    * Converter of built-in Dentaku functions into `Completion` objects.
    * Allows you to add additional information to completions like descriptions.
    */
@@ -65,11 +72,14 @@ export interface DentakuLanguageCompletionOptions {
 
 The `linterOptions` object is of type `DentakuLinterOptions & { codeMirrorConfig?: Parameters<typeof linter>[1] }` (see [`linter`](https://codemirror.net/docs/ref/#lint.linter)).  
 This means that, apart from allowing fields from `DentakuLinterOptions` described below, the `linterOptions` also allows an optional `codeMirrorConfig` field that lets you specify options for the CodeMirror [linter](https://codemirror.net/docs/ref/#lint.linter) function (`linter(lintSource, options)`).
+The `customFunctions` property is an object with the custom functions names as keys and `Arity` object as values (see [Custom Functions](#custom-functions") below).
 
 ```ts
 export interface DentakuLinterOptions {
   /** List of variable names to not treat as undefined. */
   knownVariables?: Array<string>;
+  /** Custom functions. */
+  customFunctions?: Record<string, Arity>;
   /** Custom error messages. */
   messages?: ErrorMessages;
 }
@@ -88,11 +98,55 @@ export interface ErrorMessages {
   callParenthesesMissing: string;
   /** This variable is not defined. */
   undefinedVariable: string;
-  /** Expected at least one parameter in a function call. */
-  expectedAtLeastOneParameter: string;
-  /** Expected that many parameters, found this many. */
-  parameterCountMismatch: (thatMany: number, thisMany: number) => string;
+  /** Expected exactly that many parameters, found this many. */
+  expectedExactArgumentCount: (
+    actualCount: number,
+    expectedCount: number
+  ) => string;
+  /** Expected at most that many parameters, found this many. */
+  expectedMaximumArgumentCount: (
+    actualCount: number,
+    maxCount: number
+  ) => string;
+  /** Expected at least that many parameters, found this many. */
+  expectedMinimumArgumentCount: (
+    actualCount: number,
+    minCount: number
+  ) => string;
+  /** Expected between that and that many parameters, found this many. */
+  expectedArgumentCountRange: (
+    actualCount: number,
+    minCount: number,
+    maxCount: number
+  ) => string;
 }
+```
+
+### Custom Functions
+
+The configuration of custom functions allows defining the minimum and maximum number of arguments that can be passed to each function. When a function supports an unknown number of maximum arguments, `Infinity` should be provided. If an empty object (`{}`) is provided as value, by default, the minimum will be `0` and the maximum `Infinity`. When a is provided, both `minArgs` and `maxArgs` are required.
+
+```ts
+/** Arity config for built-in and custom functions  */
+export type Arity = {
+  /** @default 0 */
+  minArgs?: number;
+  /** @default Infinity */
+  maxArgs?: number;
+};
+
+// Example of custom functions configuration
+const customFunctions: Record<string, Arity> = {
+  fnWithOneArg: {
+    minArgs: 1,
+    maxArgs: 1,
+  },
+  fnWithTwoOrMoreArgs: {
+    minArgs: 2,
+    maxArgs: Infinity,
+  },
+  fnWithDefaultConfig: {},
+};
 ```
 
 ## Missing features
@@ -102,8 +156,5 @@ These features aren't on our roadmap because we don't use them currently, but co
 - [ ] Hexadecimal number literals (e.g., `0xFF`)
 - [ ] Logic operators as operators (e.g., `a AND b`), functions are supported though (e.g, `and(a, b)`)
 - [ ] Syntax highlighting of `case` statements
-- [ ] Autocompletion for custom functions
-- [ ] Linting argument counts of custom functions (including functions that take no arguments)
-- [ ] Linting argument counts of functions with optional arguments
 - [ ] Customizing the severity of lint errors
 - [ ] Auto-fixing for fixable lint errors

@@ -1,7 +1,7 @@
 import type { CompletionContext, Completion } from "@codemirror/autocomplete";
 import { syntaxTree } from "@codemirror/language";
 
-import { builtInFunctions } from "./builtInFunctions";
+import { BuiltInFunctionsType, builtInFunctions } from "./builtInFunctions";
 import { builtInOperators } from "./builtInOperators";
 
 export interface DentakuLanguageCompletionOptions {
@@ -13,11 +13,18 @@ export interface DentakuLanguageCompletionOptions {
    */
   variableEntries?: Array<Completion>;
   /**
+   * CodeMirror `Completion` objects for custom functions.
+   *
+   * @example
+   * ["fnA", "fnB"].map(name => ({ label: name, type: "function" }))
+   */
+  customFunctionEntries?: Array<Completion>;
+  /**
    * Converter of built-in Dentaku functions into `Completion` objects.
    * Allows you to add additional information to completions like descriptions.
    */
   makeEntryForBuiltInFunctions?: (
-    name: (typeof builtInFunctions)[number]
+    name: BuiltInFunctionsType
   ) => Completion | null | false;
   /**
    * Converter of built-in Dentaku operators into `Completion` objects.
@@ -50,6 +57,7 @@ function rightmostLeaf<NodeType extends NodeApproximation>(node: NodeType) {
 
 export function dentakuCompletions({
   variableEntries = [],
+  customFunctionEntries = [],
   makeEntryForBuiltInFunctions = (name) => ({ label: name, type: "function" }),
   makeEntryForBuiltInOperators = (name) => ({ label: name, type: "operator" }),
 }: DentakuLanguageCompletionOptions = {}) {
@@ -89,12 +97,18 @@ export function dentakuCompletions({
         validFor: Identifier,
       };
     } else if (isWord || context.explicit) {
-      const functionEntries = builtInFunctions
+      const builtInFunctionEntries = (
+        Object.keys(builtInFunctions) as Array<BuiltInFunctionsType>
+      )
         .map(makeEntryForBuiltInFunctions)
         .filter(Boolean);
 
       return {
-        options: [...functionEntries, ...variableEntries],
+        options: [
+          ...builtInFunctionEntries,
+          ...customFunctionEntries,
+          ...variableEntries,
+        ],
         from: isWord ? inner.from : context.pos,
         validFor: Identifier,
       };
